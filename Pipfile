@@ -11,6 +11,7 @@ v = {editable = true,version = "*"}
 [packages]
 knack = "*"
 requests = "*"
+click = "*"
 
 [requires]
 python_version = "3.6"
