@@ -27,20 +27,6 @@ class VersionParser(HTMLParser):
             self.versions.append(data.split('_')[1])
 
 
-class PlatformParser():
-    def get_platform(self):
-        machine = platform.machine()
-        if machine == 'x86_64':
-            return 'amd64'
-        elif machine == 'i386':
-            return '386'
-        elif machine == 'arm':
-            return 'arm'
-
-    def get_system(self):
-        return platform.system().lower()
-
-
 class HashiVersion():
     def __init__(self,
                  product,
@@ -56,12 +42,27 @@ class HashiVersion():
         self.base_version_url = 'https://releases.hashicorp.com/{0}/{1}/{2}_{3}_{4}_{5}.zip'
 
     def get_product_url(self):
-        return self.base_version_url.format(self.product, self.version,
-                                            self.product, self.version,
-                                            self.platform, self.architecture)
+        return self.base_version_url.format(self.product,
+                                            self.version,
+                                            self.product,
+                                            self.version,
+                                            self.get_platform(),
+                                            self.get_architecture())
 
     def get_versions_url(self):
         return self.base_url.format(self.product)
+
+    def get_architecture(self):
+        machine = platform.machine()
+        if machine == 'x86_64':
+            return 'amd64'
+        elif machine == 'i386':
+            return '386'
+        elif machine == 'arm':
+            return 'arm'
+
+    def get_platform(self):
+        return platform.system().lower()
 
 
 class Hashi():
@@ -71,10 +72,7 @@ class Hashi():
 
     def install(self, version):
         installation_path = os.path.join(Path.home(), self.install_path)
-        platformParser = PlatformParser()
-        packerVersion = HashiVersion(HashiProduct.PACKER, version,
-                                     platformParser.get_system(),
-                                     platformParser.get_platform())
+        packerVersion = HashiVersion(HashiProduct.PACKER, version)
 
         print(packerVersion.get_versions_url())
         version_request = requests.get(packerVersion.get_versions_url())
