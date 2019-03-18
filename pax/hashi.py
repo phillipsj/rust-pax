@@ -44,7 +44,7 @@ class PlatformParser():
 class HashiVersion():
     def __init__(self,
                  product,
-                 version='latest',
+                 version,
                  platform='linux',
                  architecture='amd64'):
         self.version = version
@@ -64,24 +64,35 @@ class HashiVersion():
         return self.base_url.format(self.product)
 
 
-installation_path = os.path.join(Path.home(), '.local', 'bin')
-platformParser = PlatformParser()
-packerVersion = HashiVersion(HashiProduct.PACKER, '1.3.2',
-                             platformParser.get_system(),
-                             platformParser.get_platform())
+class Hashi():
+    def __init__(self, product, install_path='.local/bin'):
+        self.product = product
+        self.install_path = install_path
 
-print(packerVersion.get_versions_url())
-version_request = requests.get(packerVersion.get_versions_url())
+    def install(self, version):
+        installation_path = os.path.join(Path.home(), self.install_path)
+        platformParser = PlatformParser()
+        packerVersion = HashiVersion(HashiProduct.PACKER, version,
+                                     platformParser.get_system(),
+                                     platformParser.get_platform())
 
-parser = VersionParser(HashiProduct.PACKER)
-parser.feed(version_request.text)
+        print(packerVersion.get_versions_url())
+        version_request = requests.get(packerVersion.get_versions_url())
 
-# Downloads and extracts it
-print(packerVersion.get_product_url())
-package = requests.get(packerVersion.get_product_url())
-with ZipFile(BytesIO(package.content)) as zf:
-    zf.extractall(installation_path)
+        parser = VersionParser(HashiProduct.PACKER)
+        parser.feed(version_request.text)
 
-# Makes it executable
-exe_path = os.path.join(installation_path, HashiProduct.PACKER.value)
-os.chmod(exe_path, stat.S_IXUSR)
+        # Downloads and extracts it
+        print(packerVersion.get_product_url())
+        package = requests.get(packerVersion.get_product_url())
+        with ZipFile(BytesIO(package.content)) as zf:
+            zf.extractall(installation_path)
+
+        # Makes it executable
+        exe_path = os.path.join(installation_path, HashiProduct.PACKER.value)
+        os.chmod(exe_path, stat.S_IXUSR)
+
+
+# This is the usage
+#hashi = Hashi(HashiProduct.PACKER, 'test/bin')
+#hashi.install('1.3.2')
