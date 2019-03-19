@@ -12,11 +12,15 @@ import stat
 
 @unique
 class HashiProduct(Enum):
+    """Enum of valid project types."""
+
     PACKER = 'packer'
     TERRAFORM = 'terraform'
 
 
 class VersionParser(HTMLParser):
+    """Parses versions using HTMLParser."""
+
     def __init__(self, product):
         super(VersionParser, self).__init__()
         self.versions = []
@@ -80,13 +84,11 @@ class Hashi():
         parser = VersionParser(HashiProduct.PACKER)
         parser.feed(version_request.text)
 
-        # Downloads and extracts it
         print(packerVersion.get_product_url())
         package = requests.get(packerVersion.get_product_url())
         with ZipFile(BytesIO(package.content)) as zf:
             zf.extractall(installation_path)
 
-        # Makes it executable
         exe_path = os.path.join(installation_path, HashiProduct.PACKER.value)
         os.chmod(exe_path, stat.S_IXUSR)
 
