@@ -4,8 +4,6 @@
 
 import os
 import sys
-import json
-import collections
 
 import click
 
@@ -21,7 +19,7 @@ def version_msg():
 
 
 @click.group()
-@click.version_option(sys.version[:3], u'-V', u'--version', message=version_msg())
+@click.version_option(__version__, u'-V', u'--version', message=version_msg())
 def pax():
     pass
 

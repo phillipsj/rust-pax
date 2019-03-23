@@ -32,6 +32,8 @@ class VersionParser(HTMLParser):
 
 
 class HashiVersion():
+    hashiCorpBase = 'https://releases.hashicorp.com'
+
     def __init__(self,
                  product,
                  version,
@@ -42,11 +44,12 @@ class HashiVersion():
         self.architecture = architecture
         self.product = product.value
         # https://releases.hashicorp.com/packer/1.3.5/packer_1.3.5_darwin_386.zip
-        self.base_url = 'https://releases.hashicorp.com/{0}'
-        self.base_version_url = 'https://releases.hashicorp.com/{0}/{1}/{2}_{3}_{4}_{5}.zip'
+        self.base_url = '{0}/{1}'
+        self.base_version_url = ('{0}/{1}/{2}/{3}_{4}_{5}_{6}.zip')
 
     def get_product_url(self):
-        return self.base_version_url.format(self.product,
+        return self.base_version_url.format(self.hashiCorpBase,
+                                            self.product,
                                             self.version,
                                             self.product,
                                             self.version,
@@ -54,7 +57,7 @@ class HashiVersion():
                                             self.get_architecture())
 
     def get_versions_url(self):
-        return self.base_url.format(self.product)
+        return self.base_url.format(self.hashiCorpBase, self.product)
 
     def get_architecture(self):
         machine = platform.machine()
@@ -94,5 +97,5 @@ class Hashi():
 
 
 # This is the usage
-#hashi = Hashi(HashiProduct.PACKER, 'test/bin')
-#hashi.install('1.3.2')
+# hashi = Hashi(HashiProduct.PACKER, 'test/bin')
+# hashi.install('1.3.2')
