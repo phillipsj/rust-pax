@@ -34,7 +34,6 @@ fn generate_infrastructure_folder(app_name: &str) -> Folder {
 fn generate_paths(filesystem: Folder) -> Vec<PathBuf> {
     let file_paths = match filesystem {
         Folder::File(x) => vec![PathBuf::from(x)],
-        // After the first map I have a list of paths that I now need to append the folder to the front
         Folder::Folder(folder, folders) => folders
             .into_iter()
             .flat_map(|path| generate_paths(path))
@@ -58,10 +57,6 @@ fn main() -> std::io::Result<()> {
     let filesystem = generate_infrastructure_folder("myapp");
     let paths = generate_paths(filesystem);
     for path in paths {
-        if let Some(stuff) = path.to_str() {
-            println!("{}", stuff);
-        }
-
         create_path(path)?;
     }
 
