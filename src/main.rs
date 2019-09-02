@@ -1,4 +1,5 @@
 use clap::{App, AppSettings, Arg, SubCommand};
+use std::env;
 use std::fs;
 use std::fs::File;
 use std::path::PathBuf;
@@ -6,6 +7,26 @@ use std::path::PathBuf;
 enum Folder {
     File(String),
     Folder(String, Vec<Folder>),
+}
+
+fn set_tf_logging(log_level: &str, log_path: &str) {
+    env::set_var("TF_LOG", log_level);
+    env::set_var("TF_LOG_PATH", log_path);
+}
+
+fn remove_tf_logging() {
+    env::remove_var("TF_LOG");
+    env::remove_var("TF_LOG_PATH");
+}
+
+fn set_pk_logging(log_level: &str, log_path: &str) {
+    env::set_var("PACKER_LOG", log_level);
+    env::set_var("PACKER_LOG_PATH", log_path);
+}
+
+fn remove_pk_logging() {
+    env::remove_var("PACKER_LOG");
+    env::remove_var("PACKER_LOG_PATH");
 }
 
 fn convert_strings_to_files(file_names: &[&str]) -> Vec<Folder> {
@@ -35,6 +56,10 @@ fn generate_infrastructure_folder(app_name: &str) -> Folder {
 fn generate_module_folder(name: &str) -> Folder {
     let files = convert_strings_to_files(&["main.tf", "variables.tf", "output.tf"]);
     Folder::Folder(name.to_string(), files)
+}
+
+fn generate_packer_project(name: &str) -> Folder {
+    Folder::Folder(name.to_string(), vec![])
 }
 
 fn generate_paths(filesystem: Folder) -> Vec<PathBuf> {
@@ -146,13 +171,10 @@ fn main() -> std::io::Result<()> {
             },
             ("logging", Some(logging_matches)) => match logging_matches.subcommand() {
                 ("enable", Some(enable_matches)) => {
-                    println!(
-                        "Enabling logging for Terraform with file name: {}",
-                        enable_matches.value_of("file").unwrap()
-                    );
+                    set_tf_logging("DEBUG", enable_matches.value_of("file").unwrap());
                 }
                 ("disable", Some(_)) => {
-                    println!("Disabling logging for Terraform.");
+                    remove_tf_logging();
                 }
                 _ => unreachable!(),
             },
@@ -160,20 +182,18 @@ fn main() -> std::io::Result<()> {
         },
         ("pk", Some(pk_matches)) => match pk_matches.subcommand() {
             ("new", Some(new_matches)) => {
-                println!(
-                    "Creating new Packer project {}",
-                    new_matches.value_of("name").unwrap()
-                );
+                let filesystem = generate_packer_project(new_matches.value_of("name").unwrap());
+                let paths = generate_paths(filesystem);
+                for path in paths {
+                    create_path(path)?;
+                }
             }
             ("logging", Some(logging_matches)) => match logging_matches.subcommand() {
                 ("enable", Some(enable_matches)) => {
-                    println!(
-                        "Enabling logging for Packer with file name: {}",
-                        enable_matches.value_of("file").unwrap()
-                    );
+                    set_pk_logging("1", enable_matches.value_of("file").unwrap());
                 }
                 ("disable", Some(_)) => {
-                    println!("Disabling logging for Packer.");
+                    remove_pk_logging();
                 }
                 _ => unreachable!(),
             },
