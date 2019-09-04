@@ -1,8 +1,7 @@
 use clap::{App, AppSettings, Arg, SubCommand};
-use std::env;
-use std::fs;
 use std::fs::File;
 use std::path::PathBuf;
+use std::{env, fs};
 
 enum Folder {
     File(String),
@@ -59,7 +58,25 @@ fn generate_module_folder(name: &str) -> Folder {
 }
 
 fn generate_packer_project(name: &str) -> Folder {
-    Folder::Folder(name.to_string(), vec![])
+    let assets = Folder::Folder(
+        "assets".to_string(),
+        convert_strings_to_files(&[".gitkeep"]),
+    );
+    let files = Folder::Folder("files".to_string(), convert_strings_to_files(&[".gitkeep"]));
+    let scripts = Folder::Folder(
+        "scripts".to_string(),
+        convert_strings_to_files(&[".gitkeep"]),
+    );
+    let user_data = Folder::Folder(
+        "user_data".to_string(),
+        convert_strings_to_files(&[".gitkeep"]),
+    );
+    let packer_json = Folder::File(format!("{}.json", name));
+
+    Folder::Folder(
+        name.to_string(),
+        vec![assets, files, scripts, user_data, packer_json],
+    )
 }
 
 fn generate_paths(filesystem: Folder) -> Vec<PathBuf> {
