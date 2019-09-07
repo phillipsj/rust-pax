@@ -84,7 +84,7 @@ fn generate_packer_project(name: &str) -> Folder {
 }
 
 fn generate_paths(filesystem: Folder) -> Vec<PathBuf> {
-    let file_paths = match filesystem {
+    match filesystem {
         Folder::File(x) => vec![PathBuf::from(x)],
         Folder::Folder(folder, folders) => folders
             .into_iter()
@@ -92,9 +92,8 @@ fn generate_paths(filesystem: Folder) -> Vec<PathBuf> {
             .collect::<Vec<PathBuf>>()
             .into_iter()
             .map(|path| PathBuf::from(&folder).join(path))
-            .collect(),
-    };
-    file_paths
+            .collect()
+    }
 }
 
 fn create_path(path: PathBuf) -> std::io::Result<()> {
