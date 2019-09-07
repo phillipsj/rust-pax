@@ -1,7 +1,7 @@
 use clap::{App, AppSettings, Arg, SubCommand};
 use std::fs::File;
 use std::path::PathBuf;
-use std::{env, fs};
+use std::fs;
 
 enum Folder {
     File(String),
@@ -9,23 +9,27 @@ enum Folder {
 }
 
 fn set_tf_logging(log_level: &str, log_path: &str) {
-    env::set_var("TF_LOG", log_level);
-    env::set_var("TF_LOG_PATH", log_path);
-}
-
-fn remove_tf_logging() {
-    env::remove_var("TF_LOG");
-    env::remove_var("TF_LOG_PATH");
+    println!();
+    println!("Setting logging in PowerShell:");
+    println!("    $env:TF_LOG=\"{}\"", log_level);
+    println!("    $env:TF_LOG_PATH=\"{}\"", log_path);
+    println!();
+    println!();
+    println!("Setting logging in Bash:");
+    println!("    export TF_LOG=\"{}\"", log_level);
+    println!("    export TF_LOG_PATH=\"{}\"", log_path);
 }
 
 fn set_pk_logging(log_level: &str, log_path: &str) {
-    env::set_var("PACKER_LOG", log_level);
-    env::set_var("PACKER_LOG_PATH", log_path);
-}
-
-fn remove_pk_logging() {
-    env::remove_var("PACKER_LOG");
-    env::remove_var("PACKER_LOG_PATH");
+    println!();
+    println!("Setting logging in PowerShell:");
+    println!("    $env:PACKER_LOG=\"{}\"", log_level);
+    println!("    $env:PACKER_LOG_PATH=\"{}\"", log_path);
+    println!();
+    println!();
+    println!("Setting logging in Bash:");
+    println!("    export PACKER_LOG=\"{}\"", log_level);
+    println!("    export PACKER_LOG_PATH=\"{}\"", log_path);
 }
 
 fn convert_strings_to_files(file_names: &[&str]) -> Vec<Folder> {
@@ -134,9 +138,7 @@ fn main() -> std::io::Result<()> {
                     .arg(Arg::with_name("file")
                         .required(false)
                         .default_value("terraform_log.txt")
-                        .help("Defines a custom log file name. Default will be terraform_log.txt")))
-                .subcommand(SubCommand::with_name("disable")
-                    .about("Disables logging."))))
+                        .help("Defines a custom log file name. Default will be terraform_log.txt")))))
         .subcommand(SubCommand::with_name("pk")
             .about("Packer related commands")
             .setting(AppSettings::SubcommandRequiredElseHelp)
@@ -153,9 +155,7 @@ fn main() -> std::io::Result<()> {
                     .arg(Arg::with_name("file")
                         .required(false)
                         .default_value("packer_log.txt")
-                        .help("Defines a custom log file name. Default will be packer_log.txt")))
-                .subcommand(SubCommand::with_name("disable")
-                    .about("Disables logging."))))
+                        .help("Defines a custom log file name. Default will be packer_log.txt")))))
         .get_matches();
 
     match matches.subcommand() {
@@ -190,9 +190,6 @@ fn main() -> std::io::Result<()> {
                 ("enable", Some(enable_matches)) => {
                     set_tf_logging("DEBUG", enable_matches.value_of("file").unwrap());
                 }
-                ("disable", Some(_)) => {
-                    remove_tf_logging();
-                }
                 _ => unreachable!(),
             },
             _ => unreachable!(),
@@ -208,9 +205,6 @@ fn main() -> std::io::Result<()> {
             ("logging", Some(logging_matches)) => match logging_matches.subcommand() {
                 ("enable", Some(enable_matches)) => {
                     set_pk_logging("1", enable_matches.value_of("file").unwrap());
-                }
-                ("disable", Some(_)) => {
-                    remove_pk_logging();
                 }
                 _ => unreachable!(),
             },
